@@ -1,74 +1,80 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from enum import Enum,auto
+from enum import Enum, auto
 
 app = FastAPI()
 
-class Caballero(BaseModel):
-    id:int
-    name:str
-    vida:int = 100
-    ataque:int
-    vivo:bool = True
-    material = Enum
-    constelacion:str 
-    
+# Clase principal
+class Jugador(BaseModel):
+    id: int
+    nombre: str
+    dorsal: int = 100
+    edad: int
+    altura: float
+    equipo: str
+    ataque: int = 50  # Para poder hacer la función de "batalla"
+    vivo: bool = True  # Para simulaciones opcionales
 
-    class material (Enum):
-        oro = auto()
-        plata = auto()
-        bronce = auto()
+    # Enum para posición en el campo
+    class PosicionFutbol(Enum):
+        Portero = auto()
+        Defensa = auto()
+        Mediocampista = auto()
+        Delantero = auto()
+        Extremo = auto()
 
+# Instancias de jugadores
+j1 = Jugador(id=1, nombre="Jose", dorsal=12, edad=15, altura=1.85, equipo="Sagitario", ataque=70)
+j2 = Jugador(id=2, nombre="Sergio", dorsal=99, edad=16, altura=1.70, equipo="Cancer", ataque=80)
+j3 = Jugador(id=3, nombre="Omar", dorsal=10, edad=17, altura=1.69, equipo="Leo", ataque=75)
 
-p1 =Caballero(id=1,name="jose",vida=100,ataque=15,vivo=True,constelacion= "sagitario")
-p2 =Caballero(id=2,name="sergio",vida=100,ataque=16,vivo=True, constelacion= "cancer")
-p3= Caballero(id=3,name="omar",vida=100,ataque=15,vivo=True,constelacion= "leo")
+# Lista de jugadores
+lista_jugadores: list[Jugador] = [j1, j2, j3]
 
-new_caballero:list[Caballero] =[p1,p2,p3]
-
-Caballero_db = [
-    {"name": "jose"},
-    {"name": "sergio"},
-    {"name": "omar"},
-    {"name": "leo"}
-    
+# Base de datos simulada
+jugadores_db = [
+    {"nombre": "Jose"},
+    {"nombre": "Sergio"},
+    {"nombre": "Omar"},
+    {"nombre": "Leo"}
 ]
 
-@app.get("/allcaballeros/")
-def show_All_Caballero(skip: int=0, limit:int=3):
-    return new_caballero[skip: skip+limit]
 
-@app.get("/solo_caballero_por_id")
-def show_one_pokemon(pos:int=0):
-    for caballerito in new_caballero:
-        if (caballerito.id==pos):
-            return caballerito
-        else:
-            return{"caballero no encontrado"}
+@app.get("/todos_los_jugadores/")
+def mostrar_jugadores(skip: int = 0, limit: int = 3):
+    return lista_jugadores[skip: skip + limit]
 
 
-@app.get("/fight_caballero/")
-def battle(caballero1: int=0, caballero2:int=0):
+@app.get("/jugador_por_id/")
+def mostrar_jugador(id: int = 0):
+    for jugador in lista_jugadores:
+        if jugador.id == id:
+            return jugador
+    return {"error": "jugador no encontrado"}
 
-    eleccion1 = None
-    eleccion2 = None
 
-    for caballerito in new_caballero:
-        if caballerito.id == caballero1:
-            eleccion1 = caballerito
-        elif caballerito.id == caballero2:
-            eleccion2 = caballerito
+@app.get("/comparar_jugadores/")
+def comparar_jugadores(jugador1_id: int = 0, jugador2_id: int = 0):
+    jugador1 = None
+    jugador2 = None
 
-   
-    if eleccion1 is None or eleccion2 is None:
-        return {"error": "caballero no encontrado"}
+  
+    for jugador in lista_jugadores:
+        if jugador.id == jugador1_id:
+            jugador1 = jugador
+        elif jugador.id == jugador2_id:
+            jugador2 = jugador
 
-    if eleccion1.ataque < eleccion2.ataque:
-        return {"el ganador es": eleccion2}
 
-    elif eleccion2.ataque < eleccion1.ataque:
-        return {"el ganador es": eleccion1}
+    if jugador1 is None or jugador2 is None:
+        return {"error": "jugador no encontrado"}
 
+  
+    if jugador1.ataque > jugador2.ataque:
+        return {"ganador": jugador1}
+    elif jugador2.ataque > jugador1.ataque:
+          return {"ganador": jugador2}
     else:
         return {"resultado": "empate"}
+
 
